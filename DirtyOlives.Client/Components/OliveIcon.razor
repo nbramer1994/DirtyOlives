@@ -1,0 +1,17 @@
+@* Inline SVG olive. The olive emoji (U+1FAD2) is missing from many system fonts and renders as a box. *@
+
+<span class="olive-icon @(Half ? "half" : null)" aria-hidden="true">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
+        <path d="M12.6 5.4C13.4 2.9 15.6 1.4 18.6 1.2c.2 2.6-.8 4.7-2.9 6z" fill="#3d5c1f" />
+        <ellipse cx="12" cy="14" rx="6.6" ry="8.2" fill="#7a9a2b" />
+        <path d="M12 5.8a6.6 8.2 0 0 1 0 16.4 6.6 8.2 0 0 0 0-16.4z" fill="#5d7a1e" opacity="0.55" />
+        <ellipse cx="9.3" cy="10.6" rx="1.5" ry="2.5" fill="#c3dc72" opacity="0.75" transform="rotate(-20 9.3 10.6)" />
+        <ellipse cx="12" cy="14" rx="2.3" ry="3.2" fill="#c0392b" />
+        <ellipse cx="11.4" cy="12.9" rx="0.7" ry="1" fill="#e8705f" opacity="0.8" />
+    </svg>
+</span>
+
+@code {
+    /// <summary>Renders only the left half of the olive, used for half-point scores.</summary>
+    [Parameter] public bool Half { get; set; }
+}

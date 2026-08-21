@@ -1,4 +1,4 @@
-@* Reusable 1-5 rating selector. Use Glyph to switch between stars and olives. *@
+@* Reusable rating selector. Set UseOliveIcon to switch from stars to olives. *@
 
 <div class="rating-control" role="radiogroup" aria-label="@Label">
     @for (var i = 1; i <= Max; i++)
@@ -11,7 +11,14 @@
                 aria-label="@($"{position} of {Max}")"
                 title="@($"{position} of {Max}")"
                 @onclick="() => Select(position)">
-            @Glyph
+            @if (UseOliveIcon)
+            {
+                <OliveIcon />
+            }
+            else
+            {
+                @Glyph
+            }
         </button>
     }
 </div>
@@ -20,6 +27,10 @@
     [Parameter] public int Value { get; set; }
     [Parameter] public EventCallback<int> ValueChanged { get; set; }
     [Parameter] public string Glyph { get; set; } = "★";
+
+    /// <summary>Renders an inline SVG olive instead of a text glyph.</summary>
+    [Parameter] public bool UseOliveIcon { get; set; }
+
     [Parameter] public int Max { get; set; } = 5;
     [Parameter] public string Label { get; set; } = "Rating";
 

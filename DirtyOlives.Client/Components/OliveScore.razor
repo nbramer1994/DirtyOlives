@@ -1,0 +1,41 @@
+@* Rating selector that supports half olives, e.g. an overall score of 7.5 out of 10. *@
+
+<div class="olive-score" role="group" aria-label="@Label">
+    @for (var i = 1; i <= Max; i++)
+    {
+        var position = i;
+        var fillPercent = FillPercent(position);
+
+        <span class="olive-slot">
+            <span class="layer base"><OliveIcon /></span>
+            <span class="layer fill" style="width:@(fillPercent)%"><OliveIcon /></span>
+            <button type="button"
+                    class="hit left"
+                    aria-label="@($"{position - 0.5:0.#} of {Max}")"
+                    title="@($"{position - 0.5:0.#} of {Max}")"
+                    @onclick="() => Select(position - 0.5)"></button>
+            <button type="button"
+                    class="hit right"
+                    aria-label="@($"{position} of {Max}")"
+                    title="@($"{position} of {Max}")"
+                    @onclick="() => Select(position)"></button>
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+    [Parameter] public int Max { get; set; } = 10;
+    [Parameter] public string Label { get; set; } = "Rating";
+
+    private double FillPercent(int position) =>
+        Value >= position ? 100 : Value >= position - 0.5 ? 50 : 0;
+
+    private Task Select(double value)
+    {
+        // Clicking the current value clears it back to zero.
+        Value = Math.Abs(Value - value) < 0.01 ? 0 : value;
+        return ValueChanged.InvokeAsync(Value);
+    }
+}

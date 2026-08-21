@@ -22,7 +22,11 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    scope.ServiceProvider.GetRequiredService<MartiniDbContext>().Database.EnsureCreated();
+    var db = scope.ServiceProvider.GetRequiredService<MartiniDbContext>();
+    db.Database.EnsureCreated();
+
+    // EnsureCreated leaves existing databases untouched, so patch in newer optional columns.
+    SqliteSchemaUpdater.EnsureOptionalColumns(db);
 }
 
 // Configure the HTTP request pipeline.

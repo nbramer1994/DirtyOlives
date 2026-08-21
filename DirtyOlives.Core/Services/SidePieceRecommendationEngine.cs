@@ -13,8 +13,8 @@ namespace DirtyOlives.Core.Services
     {
         // Relative weight of each 1-5 category in the final score.
         private const double GlassWeight = 0.15;
-        private const double OlivesWeight = 0.30;
-        private const double MixtureWeight = 0.30;
+        private const double OlivesWeight = 0.15;
+        private const double MixtureWeight = 0.35;
         private const double VodkaWeight = 0.25;
 
         // Ice crispys are a bonus on top of the weighted score.

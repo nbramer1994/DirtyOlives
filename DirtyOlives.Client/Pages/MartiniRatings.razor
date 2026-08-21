@@ -50,7 +50,11 @@ else
                             </div>
                             <div class="text-end">
                                 <div class="final-score">@OliveScale(rating.FinalRating)</div>
-                                <small class="text-muted">@rating.FinalRating.ToString("0.#") / 10 olives</small>
+                                <small class="text-muted d-block">
+                                    @rating.FinalRating.ToString("0.#") / 10 olives
+                                    @(rating.IsManuallyRated ? " (manual)" : string.Empty)
+                                </small>
+                                <small class="text-muted d-block">Side piece score: @rating.CalculatedRating.ToString("0.#") / 10</small>
                             </div>
                         </div>
 
@@ -62,7 +66,7 @@ else
 
                             <dt class="col-5">Olives</dt>
                             <dd class="col-7">
-                                @rating.OliveCount@(string.IsNullOrWhiteSpace(rating.OliveType) ? "" : $" × {rating.OliveType}") — @Symbols("🫒", rating.OlivesRating)
+                                @rating.OliveCount@(string.IsNullOrWhiteSpace(rating.OliveType) ? "" : $" × {rating.OliveType}") — @OliveSymbols(rating.OlivesRating)
                             </dd>
 
                             <dt class="col-5">Mixture</dt>
@@ -137,7 +141,7 @@ else
                         </div>
                         <div class="mt-2">
                             <label class="form-label mb-0">Olive Rating</label>
-                            <StarRating @bind-Value="NewRating.OlivesRating" Glyph="🫒" Label="Olive rating" />
+                            <StarRating @bind-Value="NewRating.OlivesRating" UseOliveIcon="true" Label="Olive rating" />
                         </div>
                     </div>
 
@@ -172,9 +176,24 @@ else
                     </div>
 
                     <div class="alert alert-secondary mb-0">
-                        <div class="final-score">@OliveScale(NewRating.FinalRating)</div>
-                        <div><strong>@NewRating.FinalRating.ToString("0.#") / 10 olives</strong></div>
-                        <div class="small">
+                        <div class="final-score justify-content-start">@OliveScale(NewRating.CalculatedRating)</div>
+                        <div>
+                            <strong>Side piece score: @NewRating.CalculatedRating.ToString("0.#") / 10 olives</strong>
+                        </div>
+                        <div class="small text-muted">
+                            Total: @NewRating.FinalRating.ToString("0.#") / 10 @(NewRating.IsManuallyRated ? "(manual)" : "(calculated)")
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label mb-0">Overall Rating (half olives allowed)</label>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <OliveScore Value="@(NewRating.ManualFinalRating ?? 0)"
+                                            ValueChanged="OnManualRatingChanged"
+                                            Max="10"
+                                            Label="Overall rating" />
+                                <button type="button" class="btn btn-link btn-sm p-0" @onclick="UseCalculatedScore">Use side piece score</button>
+                            </div>
+                        </div>
+                        <div class="small mt-2">
                             Side Piece Recommendation: @SidePieceRecommendationEngine.Recommend(NewRating).Name
                         </div>
                     </div>
@@ -268,16 +287,54 @@ else
         }
     }
 
+    private void OnManualRatingChanged(double value)
+    {
+        // Clicking the current olive clears the manual score and falls back to the calculated one.
+        NewRating.ManualFinalRating = value <= 0 ? null : value;
+    }
+
+    /// <summary>Copies the calculated side piece score into the manual total.</summary>
+    private void UseCalculatedScore() => NewRating.ManualFinalRating = NewRating.CalculatedRating;
+
     private static string Symbols(string glyph, int count) =>
         count <= 0 ? "unrated" : string.Concat(Enumerable.Repeat(glyph, count));
 
+    /// <summary>Renders a 1-5 category score as olive icons.</summary>
+    private static RenderFragment OliveSymbols(int count) => builder =>
+    {
+        if (count <= 0)
+        {
+            builder.AddContent(0, "unrated");
+            return;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            builder.OpenComponent<OliveIcon>(i);
+            builder.CloseComponent();
+        }
+    };
+
     /// <summary>Renders the 0-10 score as whole and half olives.</summary>
-    private static string OliveScale(double score)
+    private static RenderFragment OliveScale(double score) => builder =>
     {
         var whole = (int)Math.Floor(score);
         var hasHalf = score - whole >= 0.5;
-        return string.Concat(Enumerable.Repeat("🫒", whole)) + (hasHalf ? "½" : string.Empty);
-    }
+        var sequence = 0;
+
+        for (var i = 0; i < whole; i++)
+        {
+            builder.OpenComponent<OliveIcon>(sequence++);
+            builder.CloseComponent();
+        }
+
+        if (hasHalf)
+        {
+            builder.OpenComponent<OliveIcon>(sequence++);
+            builder.AddComponentParameter(sequence++, nameof(OliveIcon.Half), true);
+            builder.CloseComponent();
+        }
+    };
 
     private static string GlassIcon(GlassStyle style) => style switch
     {

@@ -50,9 +50,27 @@ namespace DirtyOlives.Core.Models
         public DateTime DateRated { get; set; } = DateTime.Today;
 
         /// <summary>
-        /// Overall score out of 10 olives, rounded to the nearest half olive.
+        /// Optional manual overall score out of 10 olives, in half olive steps.
+        /// When set, it overrides the calculated score.
         /// </summary>
-        public double FinalRating => SidePieceRecommendationEngine.CalculateFinalRating(this);
+        public double? ManualFinalRating { get; set; }
+
+        /// <summary>
+        /// Score out of 10 olives calculated from the individual categories (the side piece score).
+        /// </summary>
+        public double CalculatedRating => SidePieceRecommendationEngine.CalculateFinalRating(this);
+
+        /// <summary>
+        /// Overall score out of 10 olives, rounded to the nearest half olive.
+        /// Uses <see cref="ManualFinalRating"/> when the user scored the martini by hand.
+        /// </summary>
+        public double FinalRating =>
+            ManualFinalRating.HasValue
+                ? Math.Round(Math.Clamp(ManualFinalRating.Value, 0d, 10d) * 2d, MidpointRounding.AwayFromZero) / 2d
+                : CalculatedRating;
+
+        /// <summary>True when the overall score was entered manually.</summary>
+        public bool IsManuallyRated => ManualFinalRating.HasValue;
 
         public string GlassStyleDisplay => GlassStyle switch
         {

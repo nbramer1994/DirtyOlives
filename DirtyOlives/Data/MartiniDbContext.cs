@@ -24,6 +24,8 @@ namespace DirtyOlives.Data
 
             // Calculated, presentation-only members are never persisted.
             rating.Ignore(r => r.FinalRating);
+            rating.Ignore(r => r.CalculatedRating);
+            rating.Ignore(r => r.IsManuallyRated);
             rating.Ignore(r => r.GlassStyleDisplay);
             rating.Ignore(r => r.Summary);
         }

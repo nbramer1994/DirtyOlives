@@ -51,6 +51,10 @@
 .final-score {
     font-size: 1.35rem;
     line-height: 1.2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.1rem;
 }
 
 .side-piece {
