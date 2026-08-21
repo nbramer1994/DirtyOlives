@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="DirtyOlives.Core/DirtyOlives.Core.csproj" />
-  <Project Path="DirtyOlives.Client/DirtyOlives.Client.csproj" />
-  <Project Path="DirtyOlives/DirtyOlives.csproj" />
-</Solution>
