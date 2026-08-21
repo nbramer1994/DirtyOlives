@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DirtyOlives.Core\DirtyOlives.Core.csproj" />
+    <ProjectReference Include="..\DirtyOlives.Core\DirtyOlives.Core.csproj" />
   </ItemGroup>
 
 </Project>

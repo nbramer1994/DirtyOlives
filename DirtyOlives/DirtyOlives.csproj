@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
-    <ProjectReference Include="..\..\DirtyOlives.Core\DirtyOlives.Core.csproj" />
     <ProjectReference Include="..\DirtyOlives.Client\DirtyOlives.Client.csproj" />
+    <ProjectReference Include="..\DirtyOlives.Core\DirtyOlives.Core.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
   </ItemGroup>
 
