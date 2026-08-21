@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy solution and restore as distinct layers
-COPY DirtyOlives.sln ./
+COPY DirtyOlives.slnx ./
 COPY DirtyOlives/DirtyOlives.csproj DirtyOlives/
 COPY DirtyOlives.Client/DirtyOlives.Client.csproj DirtyOlives.Client/
 COPY DirtyOlives.Core/DirtyOlives.Core.csproj DirtyOlives.Core/
