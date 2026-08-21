@@ -1,0 +1,297 @@
+@page "/ratings"
+@using DirtyOlives.Core.Models
+@using DirtyOlives.Core.Services
+@using DirtyOlives.Client.Components
+@using DirtyOlives.Client.Services
+@inject RatingsStorageService Storage
+
+<PageTitle>Martini Ratings</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Dirty Martini Ratings</h1>
+    <button class="btn btn-primary" @onclick="OpenDialog">Add Rating</button>
+</div>
+
+<div class="user-bar mb-3">
+    <label class="form-label mb-0" for="userId">User Id</label>
+    <input id="userId" type="number" min="1" class="form-control user-id-input" value="@userId"
+           @onchange="OnUserIdChanged" />
+    <button class="btn btn-outline-secondary" @onclick="LoadRatings">Load Ratings</button>
+    <span class="text-muted small">Ratings are stored per user id.</span>
+</div>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (!isLoaded)
+{
+    <p><em>Loading your ratings…</em></p>
+}
+else if (Ratings.Count == 0)
+{
+    <p class="text-muted">No martinis rated yet for user @userId. Add your first one to get started.</p>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var rating in Ratings.OrderByDescending(r => r.DateRated))
+        {
+            var recommendation = SidePieceRecommendationEngine.Recommend(rating);
+
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title mb-1">@(string.IsNullOrWhiteSpace(rating.Location) ? "Unknown bar" : rating.Location)</h5>
+                                <h6 class="card-subtitle text-muted">@rating.DateRated.ToString("d")</h6>
+                            </div>
+                            <div class="text-end">
+                                <div class="final-score">@OliveScale(rating.FinalRating)</div>
+                                <small class="text-muted">@rating.FinalRating.ToString("0.#") / 10 olives</small>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <dl class="row mb-0 small">
+                            <dt class="col-5">Glass</dt>
+                            <dd class="col-7">@rating.GlassStyleDisplay — @Symbols("★", rating.GlassRating)</dd>
+
+                            <dt class="col-5">Olives</dt>
+                            <dd class="col-7">
+                                @rating.OliveCount@(string.IsNullOrWhiteSpace(rating.OliveType) ? "" : $" × {rating.OliveType}") — @Symbols("🫒", rating.OlivesRating)
+                            </dd>
+
+                            <dt class="col-5">Mixture</dt>
+                            <dd class="col-7">@Symbols("★", rating.MixtureRating)</dd>
+
+                            <dt class="col-5">Vodka</dt>
+                            <dd class="col-7">
+                                @(string.IsNullOrWhiteSpace(rating.Vodka) ? "Unspecified" : rating.Vodka) — @Symbols("★", rating.VodkaRating)
+                            </dd>
+
+                            <dt class="col-5">Ice Crispys</dt>
+                            <dd class="col-7">@(rating.HasIceCrispys ? "Yes ❄️" : "No")</dd>
+                        </dl>
+
+                        <div class="side-piece mt-3">
+                            <strong>Side Piece Recommendation:</strong> @recommendation.Name
+                            <div class="small text-muted">@recommendation.Reason</div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-end">
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => Delete(rating)">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (IsDialogOpen)
+{
+    <div class="modal-backdrop show"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Martini Rating</h4>
+                    <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Glass Style</label>
+                        <div class="glass-style-picker">
+                            @foreach (var style in Enum.GetValues<GlassStyle>())
+                            {
+                                var current = style;
+                                <button type="button"
+                                        class="glass-option @(NewRating.GlassStyle == current ? "selected" : "")"
+                                        @onclick="() => NewRating.GlassStyle = current">
+                                    <span class="glass-icon">@GlassIcon(current)</span>
+                                    <span class="glass-name">@GlassName(current)</span>
+                                </button>
+                            }
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label mb-0">Glass Rating</label>
+                            <StarRating @bind-Value="NewRating.GlassRating" Glyph="★" Label="Glass rating" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Olives</label>
+                        <div class="row g-2">
+                            <div class="col-sm-4">
+                                <label class="form-label small mb-0">Count</label>
+                                <InputNumber class="form-control" @bind-Value="NewRating.OliveCount" min="0" />
+                            </div>
+                            <div class="col-sm-8">
+                                <label class="form-label small mb-0">Type</label>
+                                <InputText class="form-control" @bind-Value="NewRating.OliveType" placeholder="Blue cheese stuffed, Castelvetrano…" />
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label mb-0">Olive Rating</label>
+                            <StarRating @bind-Value="NewRating.OlivesRating" Glyph="🫒" Label="Olive rating" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Vodka</label>
+                        <InputText class="form-control" @bind-Value="NewRating.Vodka" placeholder="Tito's, Grey Goose…" />
+                        <div class="mt-2">
+                            <label class="form-label mb-0">Vodka Rating</label>
+                            <StarRating @bind-Value="NewRating.VodkaRating" Glyph="★" Label="Vodka rating" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mixture Rating</label>
+                        <StarRating @bind-Value="NewRating.MixtureRating" Glyph="★" Label="Mixture rating" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox class="form-check-input" id="iceCrispys" @bind-Value="NewRating.HasIceCrispys" />
+                        <label class="form-check-label" for="iceCrispys">Has ice crispys ❄️</label>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-8">
+                            <label class="form-label">Location</label>
+                            <InputText class="form-control" @bind-Value="NewRating.Location" placeholder="Where did you drink it?" />
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label">Date</label>
+                            <InputDate class="form-control" @bind-Value="NewRating.DateRated" />
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary mb-0">
+                        <div class="final-score">@OliveScale(NewRating.FinalRating)</div>
+                        <div><strong>@NewRating.FinalRating.ToString("0.#") / 10 olives</strong></div>
+                        <div class="small">
+                            Side Piece Recommendation: @SidePieceRecommendationEngine.Recommend(NewRating).Name
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseDialog">Cancel</button>
+                    <button class="btn btn-success" @onclick="Save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MartiniRating> Ratings = new();
+    private MartiniRating NewRating = new();
+    private bool IsDialogOpen;
+    private bool isLoaded;
+    private int userId = MartiniRating.DefaultUserId;
+    private string? errorMessage;
+
+    protected override Task OnInitializedAsync() => LoadRatings();
+
+    private async Task OnUserIdChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var parsed) && parsed > 0)
+        {
+            userId = parsed;
+            await LoadRatings();
+        }
+    }
+
+    private async Task LoadRatings()
+    {
+        isLoaded = false;
+        errorMessage = null;
+
+        try
+        {
+            Ratings = await Storage.LoadAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not load ratings: {ex.Message}";
+            Ratings = new List<MartiniRating>();
+        }
+        finally
+        {
+            isLoaded = true;
+        }
+    }
+
+    private void OpenDialog()
+    {
+        NewRating = new MartiniRating { UserId = userId };
+        IsDialogOpen = true;
+    }
+
+    private void CloseDialog() => IsDialogOpen = false;
+
+    private async Task Save()
+    {
+        errorMessage = null;
+        NewRating.UserId = userId;
+
+        try
+        {
+            var saved = await Storage.AddAsync(NewRating);
+            Ratings.Add(saved);
+            IsDialogOpen = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not save rating: {ex.Message}";
+        }
+    }
+
+    private async Task Delete(MartiniRating rating)
+    {
+        errorMessage = null;
+
+        try
+        {
+            await Storage.DeleteAsync(rating.Id, rating.UserId);
+            Ratings.Remove(rating);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not delete rating: {ex.Message}";
+        }
+    }
+
+    private static string Symbols(string glyph, int count) =>
+        count <= 0 ? "unrated" : string.Concat(Enumerable.Repeat(glyph, count));
+
+    /// <summary>Renders the 0-10 score as whole and half olives.</summary>
+    private static string OliveScale(double score)
+    {
+        var whole = (int)Math.Floor(score);
+        var hasHalf = score - whole >= 0.5;
+        return string.Concat(Enumerable.Repeat("🫒", whole)) + (hasHalf ? "½" : string.Empty);
+    }
+
+    private static string GlassIcon(GlassStyle style) => style switch
+    {
+        GlassStyle.Classic => "🍸",
+        GlassStyle.Coupe => "🥂",
+        GlassStyle.NickAndNora => "🍷",
+        GlassStyle.Stemless => "🥃",
+        GlassStyle.Rocks => "🥛",
+        _ => "🍹"
+    };
+
+    private static string GlassName(GlassStyle style) => style switch
+    {
+        GlassStyle.NickAndNora => "Nick & Nora",
+        _ => style.ToString()
+    };
+}

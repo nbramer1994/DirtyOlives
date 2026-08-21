@@ -1,0 +1,23 @@
+.rating-control {
+    display: inline-flex;
+    gap: 0.25rem;
+}
+
+.rating-symbol {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.1s ease-in-out;
+}
+
+.rating-symbol:hover {
+    transform: scale(1.15);
+}
+
+.rating-symbol.empty {
+    filter: grayscale(1);
+    opacity: 0.35;
+}

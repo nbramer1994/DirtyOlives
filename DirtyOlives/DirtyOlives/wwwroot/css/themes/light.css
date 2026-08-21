@@ -1,0 +1,141 @@
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-accent: #e9ecef;
+    
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    
+    --border-color: #dee2e6;
+    --shadow: rgba(0, 0, 0, 0.1);
+
+    --sidebar-bg-start: #1e3a8a;
+    --sidebar-bg-end: #3b82f6;
+    --sidebar-text: #ffffff;
+    --sidebar-hover: rgba(255, 255, 255, 0.1);
+
+    --announcement-bg: #cff4fc;
+    --announcement-border: #b6effb;
+    --announcement-text: #055160;
+}
+
+/* Apply theme variables */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+/* Sidebar gradient styling */
+.sidebar {
+    background: linear-gradient(180deg, var(--sidebar-bg-start) 0%, var(--sidebar-bg-end) 100%) !important;
+}
+
+.nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+.nav-link:hover {
+    background-color: var(--sidebar-hover) !important;
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Top row styling */
+.top-row {
+    background-color: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar .top-row {
+    background: transparent !important; /* Inherit gradient from sidebar */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.top-row a {
+    color: var(--text-primary) !important;
+}
+
+.top-row a:hover {
+    color: var(--primary-color) !important;
+}
+
+.sidebar .navbar-brand,
+.navbar-brand {
+    color: #cdd6f4 !important;
+}
+
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.table {
+    --bs-table-bg: var(--bg-primary);
+    --bs-table-border-color: var(--border-color);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--bg-accent);
+}
+
+.modal-content {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+.form-control, .form-select {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.card {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+}

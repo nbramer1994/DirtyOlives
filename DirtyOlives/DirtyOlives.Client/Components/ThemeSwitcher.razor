@@ -1,0 +1,57 @@
+@inject IJSRuntime JSRuntime
+
+<div class="dropdown">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="oi oi-brush"></span> @currentThemeName
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+        <li><button class="dropdown-item @(currentTheme == "dirtymartini" ? "active" : "")" @onclick='() => ChangeTheme("dirtymartini")'>🫒 Dirty Martini</button></li>
+        <li><button class="dropdown-item @(currentTheme == "light" ? "active" : "")" @onclick='() => ChangeTheme("light")'>☀️ Light</button></li>
+        <li><button class="dropdown-item @(currentTheme == "dark" ? "active" : "")" @onclick='() => ChangeTheme("dark")'>🌙 Dark</button></li>
+        <li><button class="dropdown-item @(currentTheme == "green" ? "active" : "")" @onclick='() => ChangeTheme("green")'>🌿 Green</button></li>
+        <li><button class="dropdown-item @(currentTheme == "red" ? "active" : "")" @onclick='() => ChangeTheme("red")'>🔴 Red</button></li>
+    </ul>
+</div>
+
+@code {
+    private string currentTheme = "dirtymartini";
+    private string currentThemeName = "Dirty Martini";
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Load saved theme from localStorage
+        try
+        {
+            currentTheme = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "selectedTheme") ?? "dirtymartini";
+            UpdateThemeName();
+        }
+        catch
+        {
+            currentTheme = "dirtymartini";
+        }
+    }
+
+    private async Task ChangeTheme(string theme)
+    {
+        currentTheme = theme;
+        UpdateThemeName();
+
+        //Save to localStorage
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "selectedTheme", theme);
+
+        //Update the theme stylesheet
+        await JSRuntime.InvokeVoidAsync("changeTheme", theme);
+    }
+
+    private void UpdateThemeName()
+    {
+        currentThemeName = currentTheme switch
+        {
+            "dark" => "Dark",
+            "green" => "Green",
+            "red" => "Red",
+            "light" => "Light",
+            _ => "Dirty Martini"
+        };
+    }
+}

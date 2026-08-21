@@ -1,0 +1,288 @@
+:root {
+    --primary-color: #1e1e2e;
+    --primary-hover: #313244;
+    --secondary-color: #45475a;
+    --success-color: #a6e3a1;
+    --danger-color: #f38ba8;
+    --warning-color: #f9e2af;
+    --info-color: #89dceb;
+    --light-color: #cdd6f4;
+    --dark-color: #11111b;
+    
+    --bg-primary: #1e1e2e;
+    --bg-secondary: #181825;
+    --bg-accent: #313244;
+    
+    --text-primary: #cdd6f4;
+    --text-secondary: #bac2de;
+    --text-muted: #7f849c;
+    
+    --border-color: #45475a;
+    --shadow: rgba(0, 0, 0, 0.5);
+
+    --sidebar-bg-start: #11111b;
+    --sidebar-bg-end: #1e1e2e;
+    --sidebar-text: #cdd6f4;
+    --sidebar-hover: rgba(137, 180, 250, 0.1);
+
+    --announcement-bg: #313244;
+    --announcement-border: #89dceb;
+    --announcement-text: #89dceb;
+    --announcement-close-invert: 1;
+}
+
+/* Dark theme specific overrides */
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* Sidebar gradient styling */
+.sidebar {
+    background: linear-gradient(180deg, var(--sidebar-bg-start) 0%, var(--sidebar-bg-end) 100%) !important;
+}
+
+.nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+.nav-link:hover {
+    background-color: var(--sidebar-hover) !important;
+}
+
+.nav-link.active {
+    background-color: rgba(137, 180, 250, 0.2) !important;
+    color: #89b4fa !important;
+}
+
+/* Top row styling */
+.top-row {
+    background-color: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar .top-row {
+    background: transparent !important; /* Inherit gradient from sidebar */
+    border-bottom: 1px solid rgba(137, 180, 250, 0.2) !important;
+}
+
+.top-row a {
+    color: var(--text-primary) !important;
+}
+
+.top-row a:hover {
+    color: #89b4fa !important;
+}
+
+.navbar-brand {
+    color: #cdd6f4 !important;
+}
+
+.btn-primary {
+    background-color: #89b4fa !important;
+    border-color: #89b4fa !important;
+    color: #1e1e2e !important;
+}
+
+.btn-primary:hover {
+    background-color: #74c7ec !important;
+    border-color: #74c7ec !important;
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    color: #1e1e2e !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+    color: #1e1e2e !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+    color: #1e1e2e !important;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-color) !important;
+    color: #1e1e2e !important;
+}
+
+.badge.bg-info {
+    background-color: var(--info-color) !important;
+    color: #1e1e2e !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.table {
+    --bs-table-bg: var(--bg-primary);
+    --bs-table-border-color: var(--border-color);
+    --bs-table-color: var(--text-primary);
+    color: var(--text-primary) !important;
+}
+
+.table thead th {
+    color: var(--text-primary) !important;
+}
+
+.table tbody td {
+    color: var(--text-primary) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--bg-accent);
+    color: var(--text-primary) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(even) > * {
+    color: var(--text-primary) !important;
+}
+
+/* Bootstrap paints row variants through these CSS variables (the cell fill is an inset box-shadow
+   driven by --bs-table-bg-type/--bs-table-accent-bg), so the whole set must be redefined.
+   Overriding background-color alone is painted over by that shadow. */
+.table-success,
+.table > :not(caption) > tr.table-success > * {
+    --bs-table-color: var(--success-color);
+    --bs-table-bg: #2b352b;
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg: #2b352b;
+    --bs-table-striped-color: var(--success-color);
+    --bs-table-active-bg: #334033;
+    --bs-table-active-color: var(--success-color);
+    --bs-table-hover-bg: #334033;
+    --bs-table-hover-color: var(--success-color);
+    --bs-table-accent-bg: #2b352b;
+    color: var(--success-color) !important;
+}
+
+.table-danger,
+.table > :not(caption) > tr.table-danger > * {
+    --bs-table-color: var(--danger-color);
+    --bs-table-bg: #382a2e;
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg: #382a2e;
+    --bs-table-striped-color: var(--danger-color);
+    --bs-table-active-bg: #433236;
+    --bs-table-active-color: var(--danger-color);
+    --bs-table-hover-bg: #433236;
+    --bs-table-hover-color: var(--danger-color);
+    --bs-table-accent-bg: #382a2e;
+    color: var(--danger-color) !important;
+}
+
+/* Rows being edited use a neutral blue-grey rather than Bootstrap's bright yellow. */
+.table-warning,
+.table > :not(caption) > tr.table-warning > * {
+    --bs-table-color: var(--text-primary);
+    --bs-table-bg: #2a2f3d;
+    --bs-table-border-color: var(--border-color);
+    --bs-table-striped-bg: #2a2f3d;
+    --bs-table-striped-color: var(--text-primary);
+    --bs-table-active-bg: #333a4a;
+    --bs-table-active-color: var(--text-primary);
+    --bs-table-hover-bg: #333a4a;
+    --bs-table-hover-color: var(--text-primary);
+    --bs-table-accent-bg: #2a2f3d;
+    color: var(--text-primary) !important;
+}
+
+/* The expanded editor row sits under the row being edited and shares its surface. */
+.crud-detail-row > td {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-content {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+}
+
+.form-control, .form-select {
+    background-color: var(--bg-accent);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-accent);
+    border-color: #89b4fa;
+    color: var(--text-primary);
+}
+
+/* Bootstrap's default disabled surface is a light grey, which glares against the dark theme. */
+.form-control:disabled, .form-select:disabled,
+.form-control[readonly], .form-check-input:disabled {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+.form-check-input:disabled {
+    filter: none;
+}
+
+.card {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.card-body {
+    background-color: var(--bg-primary);
+}
+
+.alert-danger {
+    background-color: rgba(243, 139, 168, 0.2);
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.alert-success {
+    background-color: rgba(166, 227, 161, 0.2);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.alert-warning {
+    background-color: rgba(249, 226, 175, 0.15);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.alert-info {
+    background-color: rgba(137, 220, 235, 0.15);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-decoration-line-through {
+    opacity: 0.6;
+}

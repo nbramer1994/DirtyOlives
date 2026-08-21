@@ -1,0 +1,32 @@
+@* Reusable 1-5 rating selector. Use Glyph to switch between stars and olives. *@
+
+<div class="rating-control" role="radiogroup" aria-label="@Label">
+    @for (var i = 1; i <= Max; i++)
+    {
+        var position = i;
+        <button type="button"
+                class="rating-symbol @(position <= Value ? "filled" : "empty")"
+                role="radio"
+                aria-checked="@(position == Value)"
+                aria-label="@($"{position} of {Max}")"
+                title="@($"{position} of {Max}")"
+                @onclick="() => Select(position)">
+            @Glyph
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public string Glyph { get; set; } = "★";
+    [Parameter] public int Max { get; set; } = 5;
+    [Parameter] public string Label { get; set; } = "Rating";
+
+    private async Task Select(int position)
+    {
+        // Clicking the current value clears it back to zero.
+        Value = Value == position ? 0 : position;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

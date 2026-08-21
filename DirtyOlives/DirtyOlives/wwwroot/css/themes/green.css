@@ -1,0 +1,156 @@
+:root {
+    --primary-color: #059669;
+    --primary-hover: #047857;
+    --secondary-color: #6b7280;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #06b6d4;
+    --light-color: #f3f4f6;
+    --dark-color: #1f2937;
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0fdf4;
+    --bg-accent: #dcfce7;
+    
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    
+    --border-color: #d1fae5;
+    --shadow: rgba(5, 150, 105, 0.1);
+
+    --sidebar-bg-start: #064e3b;
+    --sidebar-bg-end: #059669;
+    --sidebar-text: #ffffff;
+    --sidebar-hover: rgba(255, 255, 255, 0.1);
+
+    --announcement-bg: #dcfce7;
+    --announcement-border: #a7f3d0;
+    --announcement-text: #064e3b;
+}
+
+/* Green theme specific styling */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+/* Sidebar gradient styling */
+.sidebar {
+    background: linear-gradient(180deg, var(--sidebar-bg-start) 0%, var(--sidebar-bg-end) 100%) !important;
+}
+
+.nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+.nav-link:hover {
+    background-color: var(--sidebar-hover) !important;
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Top row styling */
+.top-row {
+    background-color: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar .top-row {
+    background: transparent !important; /* Inherit gradient from sidebar */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.top-row a {
+    color: var(--text-primary) !important;
+}
+
+.top-row a:hover {
+    color: var(--primary-color) !important;
+}
+
+.sidebar .navbar-brand,
+.navbar-brand {
+    color: #cdd6f4 !important;
+}
+
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.table {
+    --bs-table-bg: var(--bg-primary);
+    --bs-table-border-color: var(--border-color);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--bg-accent);
+}
+
+.modal-content {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+.form-control, .form-select {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.25);
+}
+
+.card {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+/* Green accent for headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-color);
+}
+
+/* Card headers with green accent */
+.card-title {
+    color: var(--primary-color);
+}
