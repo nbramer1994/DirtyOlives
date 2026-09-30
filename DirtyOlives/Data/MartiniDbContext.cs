@@ -32,6 +32,7 @@ namespace DirtyOlives.Data
             rating.Property(r => r.Location).HasMaxLength(200);
             rating.Property(r => r.OliveType).HasMaxLength(200);
             rating.Property(r => r.Vodka).HasMaxLength(200);
+            rating.Property(r => r.Notes).HasMaxLength(2000);
 
             // DateRated is a calendar date, but it maps to timestamptz on PostgreSQL,
             // which rejects any DateTime that is not Kind=Utc. DateTime.Today yields

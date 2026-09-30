@@ -93,6 +93,14 @@ else
                             <dd class="col-7">@(rating.HasIceCrispys ? "Yes ❄️" : "No")</dd>
                         </dl>
 
+                        @if (!string.IsNullOrWhiteSpace(rating.Notes))
+                        {
+                            <div class="rating-notes mt-3 small">
+                                <strong>Notes:</strong>
+                                <div class="text-muted" style="white-space: pre-wrap;">@rating.Notes</div>
+                            </div>
+                        }
+
                         <div class="side-piece mt-3">
                             <strong>Side Piece Recommendation:</strong> @recommendation.Name
                             <div class="small text-muted">@recommendation.Reason</div>
@@ -215,6 +223,12 @@ else
                             <label class="form-label">Date</label>
                             <InputDate class="form-control" @bind-Value="NewRating.DateRated" />
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <InputTextArea class="form-control" rows="3" @bind-Value="NewRating.Notes"
+                                       placeholder="Anything worth remembering about this one?" />
                     </div>
 
                     <div class="alert alert-secondary mb-0">

@@ -50,6 +50,11 @@ namespace DirtyOlives.Core.Models
         public DateTime DateRated { get; set; } = DateTime.Today;
 
         /// <summary>
+        /// Free form notes about the martini. Nullable so it can be added to existing databases.
+        /// </summary>
+        public string? Notes { get; set; }
+
+        /// <summary>
         /// Optional manual overall score out of 10 olives, in half olive steps.
         /// When set, it overrides the calculated score.
         /// </summary>
