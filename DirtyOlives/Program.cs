@@ -32,12 +32,10 @@ builder.Services.AddDbContext<MartiniDbContext>(options =>
 
 builder.Services.AddScoped<MartiniRatingService>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddSingleton<DatabaseStartupReport>();
 
 // MainLayout is prerendered on the server, so its injected client services must
 // also resolve here. They are only actually used once the component is interactive.
 builder.Services.AddScoped(_ => new HttpClient());
-builder.Services.AddScoped<DatabaseHealthService>();
 builder.Services.AddScoped<UserSessionService>();
 
 var app = builder.Build();
@@ -45,7 +43,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MartiniDbContext>();
-    var report = app.Services.GetRequiredService<DatabaseStartupReport>();
 
     var provider = db.Database.ProviderName ?? "unknown";
     var dataSource = db.Database.GetDbConnection().DataSource ?? "unknown";
@@ -63,13 +60,11 @@ using (var scope = app.Services.CreateScope())
             .GetAwaiter()
             .GetResult();
 
-        report.RecordSuccess(provider, dataSource);
         app.Logger.LogInformation("Database ready ({Provider} @ {DataSource}).", provider, dataSource);
     }
     catch (Exception ex)
     {
-        // Stay up so the UI can report the failure instead of the host just dying.
-        report.RecordFailure(provider, dataSource, ex);
+        // Stay up so the site still serves instead of the host just dying.
         app.Logger.LogError(ex.GetBaseException(),
             "Database unavailable at startup ({Provider} @ {DataSource}).", provider, dataSource);
     }
