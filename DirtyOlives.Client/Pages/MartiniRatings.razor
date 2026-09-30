@@ -103,8 +103,31 @@ else
                         }
 
                         <div class="side-piece mt-3">
-                            <strong>Side Piece Recommendation:</strong> @recommendation.Name
-                            <div class="small text-muted">@recommendation.Reason</div>
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <strong>Side Piece Recommendations</strong>
+                                <span class="badge text-bg-secondary flex-shrink-0">@recommendation.TierLabel</span>
+                            </div>
+                            <ul class="list-unstyled small mb-0 mt-2">
+                                @foreach (var option in recommendation.Options)
+                                {
+                                    <li class="mb-1">
+                                        @option.Name
+                                        <div class="text-muted">@option.Reason</div>
+                                    </li>
+                                }
+                            </ul>
+                            @if (recommendation.Tips.Count > 0)
+                            {
+                                <div class="small mt-2">
+                                    <strong>Tips for next time</strong>
+                                    <ul class="text-muted fst-italic mb-0 ps-3">
+                                        @foreach (var tip in recommendation.Tips)
+                                        {
+                                            <li>@tip</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
                         </div>
                     </div>
                     <div class="card-footer text-end">
@@ -251,7 +274,31 @@ else
                             </div>
                         </div>
                         <div class="small mt-2">
-                            Side Piece Recommendation: @SidePieceRecommendationEngine.Recommend(NewRating).Name
+                            @{
+                                var preview = SidePieceRecommendationEngine.Recommend(NewRating);
+                            }
+                            <strong>Side Piece Recommendations</strong>
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var option in preview.Options)
+                                {
+                                    <li class="mb-1">
+                                        @option.Name
+                                        <div class="text-muted">@option.Reason</div>
+                                    </li>
+                                }
+                            </ul>
+                            @if (preview.Tips.Count > 0)
+                            {
+                                <div class="mt-2">
+                                    <strong>Tips for next time</strong>
+                                    <ul class="text-muted fst-italic mb-0 ps-3">
+                                        @foreach (var tip in preview.Tips)
+                                        {
+                                            <li>@tip</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
                         </div>
                     </div>
 
