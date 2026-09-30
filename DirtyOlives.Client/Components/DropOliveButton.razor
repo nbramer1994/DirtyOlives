@@ -1,0 +1,43 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@* Drops an olive that falls down the page, bouncing off headings, cards, and
+   paragraphs before rolling off the bottom and removing itself. The olive
+   elements are created in JS because the physics needs real element positions. *@
+
+<button type="button" class="btn btn-sm btn-outline-success" @onclick="DropAsync">
+    Drop Olive
+</button>
+
+@code {
+    private async Task DropAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("dropOlive");
+        }
+        catch (JSException)
+        {
+            // Decoration only.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Olives are appended to the body, so they outlive this component
+        // unless they are cleaned up explicitly.
+        try
+        {
+            await JS.InvokeVoidAsync("clearOlives");
+        }
+        catch (JSException)
+        {
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+}
