@@ -13,7 +13,16 @@
     <ImportMap />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="alternate icon" type="image/png" href="favicon.png" />
-    <link rel="apple-touch-icon" href="favicon.svg" />
+    @* iOS ignores SVG here and falls back to a page screenshot, so this must be a PNG. *@
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    @* Name shown under the home screen icon; keep in sync with short_name in the manifest. *@
+    <meta name="apple-mobile-web-app-title" content="DirtyOlives" />
+    <meta name="application-name" content="DirtyOlives" />
+    @* Launch without Safari chrome when opened from the home screen. *@
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#1f2a14" />
     <script src="@Assets["js/celebrate.js"]"></script>
     <script src="@Assets["js/rolling-olive.js"]"></script>
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
