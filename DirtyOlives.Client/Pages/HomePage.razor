@@ -139,6 +139,7 @@
     private bool isNewUser;
     private bool isReady;
     private bool isBusy;
+    private bool sessionLoaded;
     private string? errorMessage;
 
     private bool CanSignIn =>
@@ -147,10 +148,13 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // localStorage and the API are only available once the client is interactive.
-        if (!firstRender)
+        // OnAfterRenderAsync also runs during static prerendering, where interop throws.
+        if (sessionLoaded || !RendererInfo.IsInteractive)
         {
             return;
         }
+
+        sessionLoaded = true;
 
         await Session.InitializeAsync();
         await LoadUsersAsync();

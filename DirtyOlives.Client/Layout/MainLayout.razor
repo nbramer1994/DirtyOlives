@@ -11,7 +11,6 @@
             <button type="button" class="btn btn-sm btn-outline-secondary me-2" @onclick="TestDatabaseAsync">
                 Test DB
             </button>
-            <ThemeSwitcher />
         </div>
 
         <article class="content px-4">
@@ -21,6 +20,7 @@
 </div>
 
 <DatabaseStatusToast @ref="dbToast" />
+<RollingOlive />
 
 @code {
     private DatabaseStatusToast? dbToast;

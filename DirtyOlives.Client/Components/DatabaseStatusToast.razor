@@ -32,13 +32,17 @@
 
     /// <summary>Success toasts disappear on their own; failures stay until dismissed.</summary>
     private const int SuccessToastMs = 4000;
+    private bool startupChecked;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        // Also runs during static prerendering, where the toast cannot be shown.
+        if (startupChecked || !RendererInfo.IsInteractive)
         {
             return;
         }
+
+        startupChecked = true;
 
         await ShowAsync(await Health.GetStartupStatusAsync());
     }

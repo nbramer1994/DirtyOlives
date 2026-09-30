@@ -104,29 +104,48 @@ else
 
                         <div class="side-piece mt-3">
                             <div class="d-flex justify-content-between align-items-start gap-2">
-                                <strong>Side Piece Recommendations</strong>
+                                <strong>Side Piece Recommendation</strong>
                                 <span class="badge text-bg-secondary flex-shrink-0">@recommendation.TierLabel</span>
                             </div>
-                            <ul class="list-unstyled small mb-0 mt-2">
-                                @foreach (var option in recommendation.Options)
-                                {
-                                    <li class="mb-1">
-                                        @option.Name
-                                        <div class="text-muted">@option.Reason</div>
-                                    </li>
-                                }
-                            </ul>
-                            @if (recommendation.Tips.Count > 0)
+                            <div class="small mt-2">
+                                @recommendation.Name
+                                <div class="text-muted">@recommendation.Reason</div>
+                            </div>
+
+                            @{
+                                var extraOptions = recommendation.Options.Skip(1).ToList();
+                            }
+                            @if (extraOptions.Count > 0 || recommendation.Tips.Count > 0)
                             {
-                                <div class="small mt-2">
-                                    <strong>Tips for next time</strong>
-                                    <ul class="text-muted fst-italic mb-0 ps-3">
-                                        @foreach (var tip in recommendation.Tips)
-                                        {
-                                            <li>@tip</li>
-                                        }
-                                    </ul>
-                                </div>
+                                <details class="small mt-2">
+                                    <summary class="text-muted">More ideas and tips</summary>
+
+                                    @if (extraOptions.Count > 0)
+                                    {
+                                        <ul class="list-unstyled mb-0 mt-2">
+                                            @foreach (var option in extraOptions)
+                                            {
+                                                <li class="mb-1">
+                                                    @option.Name
+                                                    <div class="text-muted">@option.Reason</div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+
+                                    @if (recommendation.Tips.Count > 0)
+                                    {
+                                        <div class="mt-2">
+                                            <strong>Tips for next time</strong>
+                                            <ul class="text-muted fst-italic mb-0 ps-3">
+                                                @foreach (var tip in recommendation.Tips)
+                                                {
+                                                    <li>@tip</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </details>
                             }
                         </div>
                     </div>
@@ -234,7 +253,10 @@ else
                     </div>
 
                     <div class="mb-3 form-check">
-                        <InputCheckbox class="form-check-input" id="iceCrispys" @bind-Value="NewRating.HasIceCrispys" />
+                        <InputCheckbox class="form-check-input" id="iceCrispys" @ref="iceCrispysCheckbox"
+                                       Value="NewRating.HasIceCrispys"
+                                       ValueExpression="() => NewRating.HasIceCrispys"
+                                       ValueChanged="OnIceCrispysChanged" />
                         <label class="form-check-label" for="iceCrispys">Has ice crispys ❄️</label>
                     </div>
 
@@ -276,28 +298,42 @@ else
                         <div class="small mt-2">
                             @{
                                 var preview = SidePieceRecommendationEngine.Recommend(NewRating);
+                                var previewExtras = preview.Options.Skip(1).ToList();
                             }
-                            <strong>Side Piece Recommendations</strong>
-                            <ul class="list-unstyled mb-0">
-                                @foreach (var option in preview.Options)
-                                {
-                                    <li class="mb-1">
-                                        @option.Name
-                                        <div class="text-muted">@option.Reason</div>
-                                    </li>
-                                }
-                            </ul>
-                            @if (preview.Tips.Count > 0)
+                            Side Piece Recommendation: <strong>@preview.Name</strong>
+                            <div class="text-muted">@preview.Reason</div>
+
+                            @if (previewExtras.Count > 0 || preview.Tips.Count > 0)
                             {
-                                <div class="mt-2">
-                                    <strong>Tips for next time</strong>
-                                    <ul class="text-muted fst-italic mb-0 ps-3">
-                                        @foreach (var tip in preview.Tips)
-                                        {
-                                            <li>@tip</li>
-                                        }
-                                    </ul>
-                                </div>
+                                <details class="mt-2">
+                                    <summary class="text-muted">More ideas and tips</summary>
+
+                                    @if (previewExtras.Count > 0)
+                                    {
+                                        <ul class="list-unstyled mb-0 mt-2">
+                                            @foreach (var option in previewExtras)
+                                            {
+                                                <li class="mb-1">
+                                                    @option.Name
+                                                    <div class="text-muted">@option.Reason</div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+
+                                    @if (preview.Tips.Count > 0)
+                                    {
+                                        <div class="mt-2">
+                                            <strong>Tips for next time</strong>
+                                            <ul class="text-muted fst-italic mb-0 ps-3">
+                                                @foreach (var tip in preview.Tips)
+                                                {
+                                                    <li>@tip</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </details>
                             }
                         </div>
                     </div>
@@ -322,16 +358,44 @@ else
     private bool isOtherOliveType;
     private string selectedVodka = string.Empty;
     private bool isOtherVodka;
+    private InputCheckbox? iceCrispysCheckbox;
+    private bool sessionLoaded;
+
+    /// <summary>
+    /// Ticking ice crispys sets off a snowflake burst centred on the checkbox.
+    /// Unticking is silent - nothing to celebrate there.
+    /// </summary>
+    private async Task OnIceCrispysChanged(bool value)
+    {
+        NewRating.HasIceCrispys = value;
+
+        if (!value || iceCrispysCheckbox?.Element is not { } element)
+        {
+            return;
+        }
+
+        try
+        {
+            await JS.InvokeVoidAsync("celebrateIceCrispys", element);
+        }
+        catch (JSException)
+        {
+            // Decoration only; never let it interrupt data entry.
+        }
+    }
 
     private int UserId => Session.CurrentUser?.Id ?? MartiniRating.DefaultUserId;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The session lives in localStorage, which only exists once interactive.
-        if (!firstRender)
+        // OnAfterRenderAsync also runs during static prerendering, where interop throws.
+        if (sessionLoaded || !RendererInfo.IsInteractive)
         {
             return;
         }
+
+        sessionLoaded = true;
 
         await Session.InitializeAsync();
 
