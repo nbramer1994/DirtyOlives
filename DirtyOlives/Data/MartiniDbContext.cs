@@ -22,6 +22,13 @@ namespace DirtyOlives.Data
             rating.Property(r => r.OliveType).HasMaxLength(200);
             rating.Property(r => r.Vodka).HasMaxLength(200);
 
+            // DateRated is a calendar date, but it maps to timestamptz on PostgreSQL,
+            // which rejects any DateTime that is not Kind=Utc. DateTime.Today yields
+            // Kind=Local, so normalise the Kind without shifting the date itself.
+            rating.Property(r => r.DateRated).HasConversion(
+                value => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+                value => DateTime.SpecifyKind(value, DateTimeKind.Utc));
+
             // Calculated, presentation-only members are never persisted.
             rating.Ignore(r => r.FinalRating);
             rating.Ignore(r => r.CalculatedRating);
