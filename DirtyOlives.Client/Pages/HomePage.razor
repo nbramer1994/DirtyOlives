@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using DirtyOlives.Core.Models
 @using DirtyOlives.Client.Services
+@using DirtyOlives.Client.Components
 @inject UserSessionService Session
 
 <PageTitle>Home</PageTitle>
@@ -20,7 +21,7 @@
                 <h3 class="card-title">Welcome back, @signedIn.Name!</h3>
                 <p class="mb-2 text-muted">Your ratings are saved under this name.</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-primary" href="ratings">🫒 Go to ratings</a>
+                    <a class="btn btn-primary" href="ratings"><OliveIcon /> Go to ratings</a>
                     <button class="btn btn-outline-secondary" @onclick="SignOut">Switch user</button>
                 </div>
             }
