@@ -136,7 +136,24 @@ else
                             </div>
                             <div class="col-sm-8">
                                 <label class="form-label small mb-0">Type</label>
-                                <InputText class="form-control" @bind-Value="NewRating.OliveType" placeholder="Blue cheese stuffed, Castelvetrano…" />
+                                <select class="form-select" value="@selectedOliveType" @onchange="OnOliveTypeChanged">
+                                    <option value="">Select an olive…</option>
+                                    @foreach (var option in OliveTypes.All)
+                                    {
+                                        <option value="@option.Name" title="@option.Description">@option.Name</option>
+                                    }
+                                    <option value="@OliveTypes.Other">Other…</option>
+                                </select>
+
+                                @if (isOtherOliveType)
+                                {
+                                    <InputText class="form-control mt-2" @bind-Value="NewRating.OliveType"
+                                               placeholder="Type the olive variety…" />
+                                }
+                                else if (OliveTypes.DescriptionFor(selectedOliveType) is { } oliveDescription)
+                                {
+                                    <div class="form-text">@oliveDescription</div>
+                                }
                             </div>
                         </div>
                         <div class="mt-2">
@@ -147,7 +164,20 @@ else
 
                     <div class="mb-3">
                         <label class="form-label">Vodka</label>
-                        <InputText class="form-control" @bind-Value="NewRating.Vodka" placeholder="Tito's, Grey Goose…" />
+                        <select class="form-select" value="@selectedVodka" @onchange="OnVodkaChanged">
+                            <option value="">Select a vodka…</option>
+                            @foreach (var vodka in VodkaTypes.All)
+                            {
+                                <option value="@vodka">@vodka</option>
+                            }
+                            <option value="@VodkaTypes.Other">Other…</option>
+                        </select>
+
+                        @if (isOtherVodka)
+                        {
+                            <InputText class="form-control mt-2" @bind-Value="NewRating.Vodka"
+                                       placeholder="Type the vodka…" />
+                        }
                         <div class="mt-2">
                             <label class="form-label mb-0">Vodka Rating</label>
                             <StarRating @bind-Value="NewRating.VodkaRating" Glyph="★" Label="Vodka rating" />
@@ -215,6 +245,10 @@ else
     private bool isLoaded;
     private int userId = MartiniRating.DefaultUserId;
     private string? errorMessage;
+    private string selectedOliveType = string.Empty;
+    private bool isOtherOliveType;
+    private string selectedVodka = string.Empty;
+    private bool isOtherVodka;
 
     protected override Task OnInitializedAsync() => LoadRatings();
 
@@ -250,7 +284,85 @@ else
     private void OpenDialog()
     {
         NewRating = new MartiniRating { UserId = userId };
+        SyncOliveTypeSelection(NewRating.OliveType);
+        SyncVodkaSelection(NewRating.Vodka);
         IsDialogOpen = true;
+    }
+
+    /// <summary>Handles the olive variety dropdown, revealing a text box for "Other".</summary>
+    private void OnOliveTypeChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+
+        if (value == OliveTypes.Other)
+        {
+            selectedOliveType = OliveTypes.Other;
+            isOtherOliveType = true;
+            NewRating.OliveType = string.Empty;
+            return;
+        }
+
+        selectedOliveType = value;
+        isOtherOliveType = false;
+        NewRating.OliveType = value;
+    }
+
+    /// <summary>Points the dropdown at an existing value, falling back to "Other".</summary>
+    private void SyncOliveTypeSelection(string? oliveType)
+    {
+        if (string.IsNullOrWhiteSpace(oliveType))
+        {
+            selectedOliveType = string.Empty;
+            isOtherOliveType = false;
+        }
+        else if (OliveTypes.IsKnown(oliveType))
+        {
+            selectedOliveType = oliveType;
+            isOtherOliveType = false;
+        }
+        else
+        {
+            selectedOliveType = OliveTypes.Other;
+            isOtherOliveType = true;
+        }
+    }
+
+    /// <summary>Handles the vodka dropdown, revealing a text box for "Other".</summary>
+    private void OnVodkaChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+
+        if (value == VodkaTypes.Other)
+        {
+            selectedVodka = VodkaTypes.Other;
+            isOtherVodka = true;
+            NewRating.Vodka = string.Empty;
+            return;
+        }
+
+        selectedVodka = value;
+        isOtherVodka = false;
+        NewRating.Vodka = value;
+    }
+
+    /// <summary>Points the dropdown at an existing value, falling back to "Other".</summary>
+    private void SyncVodkaSelection(string? vodka)
+    {
+        if (string.IsNullOrWhiteSpace(vodka))
+        {
+            selectedVodka = string.Empty;
+            isOtherVodka = false;
+        }
+        else if (VodkaTypes.IsKnown(vodka))
+        {
+            selectedVodka = vodka;
+            isOtherVodka = false;
+        }
+        else
+        {
+            selectedVodka = VodkaTypes.Other;
+            isOtherVodka = true;
+        }
     }
 
     private void CloseDialog() => IsDialogOpen = false;
@@ -310,28 +422,30 @@ else
 
         for (var i = 0; i < count; i++)
         {
-            builder.OpenComponent<OliveIcon>(i);
+            // Sequence numbers must be constant literals, not loop variables.
+            builder.OpenComponent<OliveIcon>(1);
             builder.CloseComponent();
         }
     };
 
-    /// <summary>Renders the 0-10 score as whole and half olives.</summary>
+    /// <summary>Renders the 0-10 score as whole olives followed by an optional half.</summary>
     private static RenderFragment OliveScale(double score) => builder =>
     {
         var whole = (int)Math.Floor(score);
         var hasHalf = score - whole >= 0.5;
-        var sequence = 0;
 
         for (var i = 0; i < whole; i++)
         {
-            builder.OpenComponent<OliveIcon>(sequence++);
+            builder.OpenComponent<OliveIcon>(0);
             builder.CloseComponent();
         }
 
+        // Distinct sequence number so the diff never confuses the trailing half
+        // olive with a whole one and leaves Half=true on the wrong icon.
         if (hasHalf)
         {
-            builder.OpenComponent<OliveIcon>(sequence++);
-            builder.AddComponentParameter(sequence++, nameof(OliveIcon.Half), true);
+            builder.OpenComponent<OliveIcon>(1);
+            builder.AddComponentParameter(2, nameof(OliveIcon.Half), true);
             builder.CloseComponent();
         }
     };

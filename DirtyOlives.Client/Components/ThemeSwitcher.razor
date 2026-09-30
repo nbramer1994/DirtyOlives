@@ -5,7 +5,7 @@
         <span class="oi oi-brush"></span> @currentThemeName
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
-        <li><button class="dropdown-item @(currentTheme == "dirtymartini" ? "active" : "")" @onclick='() => ChangeTheme("dirtymartini")'>🫒 Dirty Martini</button></li>
+        <li><button class="dropdown-item @(currentTheme == "dirtymartini" ? "active" : "")" @onclick='() => ChangeTheme("dirtymartini")'><OliveIcon /> Dirty Martini</button></li>
         <li><button class="dropdown-item @(currentTheme == "light" ? "active" : "")" @onclick='() => ChangeTheme("light")'>☀️ Light</button></li>
         <li><button class="dropdown-item @(currentTheme == "dark" ? "active" : "")" @onclick='() => ChangeTheme("dark")'>🌙 Dark</button></li>
         <li><button class="dropdown-item @(currentTheme == "green" ? "active" : "")" @onclick='() => ChangeTheme("green")'>🌿 Green</button></li>
