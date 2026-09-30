@@ -6,6 +6,7 @@
 @inject RatingsStorageService Storage
 @inject UserSessionService Session
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Martini Ratings</PageTitle>
 
@@ -411,10 +412,26 @@ else
             var saved = await Storage.AddAsync(NewRating);
             Ratings.Add(saved);
             IsDialogOpen = false;
+            await CelebrateAsync(saved.FinalRating);
         }
         catch (Exception ex)
         {
             errorMessage = $"Could not save rating: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Olive confetti with one burst per whole olive scored, so a 7.5 gets seven bursts.
+    /// </summary>
+    private async Task CelebrateAsync(double finalRating)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("celebrateRating", finalRating);
+        }
+        catch (JSException)
+        {
+            // A missing celebration should never break saving a rating.
         }
     }
 
