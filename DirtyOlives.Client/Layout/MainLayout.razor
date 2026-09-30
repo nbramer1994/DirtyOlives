@@ -8,6 +8,9 @@
 
     <main>
         <div class="top-row px-4">
+            <button type="button" class="btn btn-sm btn-outline-secondary me-2" @onclick="TestDatabaseAsync">
+                Test DB
+            </button>
             <ThemeSwitcher />
         </div>
 
@@ -16,4 +19,18 @@
         </article>
     </main>
 </div>
+
+<DatabaseStatusToast @ref="dbToast" />
+
+@code {
+    private DatabaseStatusToast? dbToast;
+
+    private async Task TestDatabaseAsync()
+    {
+        if (dbToast is not null)
+        {
+            await dbToast.RunWriteTestAsync();
+        }
+    }
+}
 

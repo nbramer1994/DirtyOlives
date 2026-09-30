@@ -1,4 +1,5 @@
 using DirtyOlives.Client.Pages;
+using DirtyOlives.Client.Services;
 using DirtyOlives.Components;
 using DirtyOlives.Data;
 using DirtyOlives.Services;
@@ -30,16 +31,40 @@ builder.Services.AddDbContext<MartiniDbContext>(options =>
 });
 
 builder.Services.AddScoped<MartiniRatingService>();
+builder.Services.AddSingleton<DatabaseStartupReport>();
+
+// MainLayout is prerendered on the server, so its injected client services must
+// also resolve here. They are only actually used once the component is interactive.
+builder.Services.AddScoped(_ => new HttpClient());
+builder.Services.AddScoped<DatabaseHealthService>();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MartiniDbContext>();
-    db.Database.EnsureCreated();
+    var report = app.Services.GetRequiredService<DatabaseStartupReport>();
 
-    // EnsureCreated leaves existing databases untouched, so patch in newer optional columns.
-    DatabaseSchemaUpdater.EnsureOptionalColumns(db);
+    var provider = db.Database.ProviderName ?? "unknown";
+    var dataSource = db.Database.GetDbConnection().DataSource ?? "unknown";
+
+    try
+    {
+        db.Database.EnsureCreated();
+
+        // EnsureCreated leaves existing databases untouched, so patch in newer optional columns.
+        DatabaseSchemaUpdater.EnsureOptionalColumns(db);
+
+        report.RecordSuccess(provider, dataSource);
+        app.Logger.LogInformation("Database ready ({Provider} @ {DataSource}).", provider, dataSource);
+    }
+    catch (Exception ex)
+    {
+        // Stay up so the UI can report the failure instead of the host just dying.
+        report.RecordFailure(provider, dataSource, ex);
+        app.Logger.LogError(ex.GetBaseException(),
+            "Database unavailable at startup ({Provider} @ {DataSource}).", provider, dataSource);
+    }
 }
 
 // Configure the HTTP request pipeline.
