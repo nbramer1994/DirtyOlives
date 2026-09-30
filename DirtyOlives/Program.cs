@@ -31,12 +31,14 @@ builder.Services.AddDbContext<MartiniDbContext>(options =>
 });
 
 builder.Services.AddScoped<MartiniRatingService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddSingleton<DatabaseStartupReport>();
 
 // MainLayout is prerendered on the server, so its injected client services must
 // also resolve here. They are only actually used once the component is interactive.
 builder.Services.AddScoped(_ => new HttpClient());
 builder.Services.AddScoped<DatabaseHealthService>();
+builder.Services.AddScoped<UserSessionService>();
 
 var app = builder.Build();
 
@@ -54,6 +56,12 @@ using (var scope = app.Services.CreateScope())
 
         // EnsureCreated leaves existing databases untouched, so patch in newer optional columns.
         DatabaseSchemaUpdater.EnsureOptionalColumns(db);
+
+        // Give the owner of any pre-existing ratings a name to sign in with.
+        scope.ServiceProvider.GetRequiredService<UserService>()
+            .EnsureDefaultUserAsync("Nick")
+            .GetAwaiter()
+            .GetResult();
 
         report.RecordSuccess(provider, dataSource);
         app.Logger.LogInformation("Database ready ({Provider} @ {DataSource}).", provider, dataSource);

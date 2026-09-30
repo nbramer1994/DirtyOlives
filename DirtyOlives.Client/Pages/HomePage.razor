@@ -1,4 +1,7 @@
 ﻿@page "/"
+@using DirtyOlives.Core.Models
+@using DirtyOlives.Client.Services
+@inject UserSessionService Session
 
 <PageTitle>Home</PageTitle>
 
@@ -7,6 +10,62 @@
     <p class="lead">
         Welcome to the ultimate place to rate, review, and celebrate your dirty martinis.
     </p>
+</div>
+
+<div class="container">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            @if (Session.CurrentUser is { } signedIn)
+            {
+                <h3 class="card-title">Welcome back, @signedIn.Name!</h3>
+                <p class="mb-2 text-muted">Your ratings are saved under this name.</p>
+                <button class="btn btn-outline-secondary" @onclick="SignOut">Switch user</button>
+            }
+            else
+            {
+                <h3 class="card-title">Who's drinking?</h3>
+
+                @if (!isReady)
+                {
+                    <p><em>Loading names…</em></p>
+                }
+                else
+                {
+                    <div class="row g-2 align-items-end">
+                        <div class="col-sm-6">
+                            <label class="form-label small mb-0" for="nameSelect">Pick your name</label>
+                            <select id="nameSelect" class="form-select" value="@selectedName" @onchange="OnNameSelected">
+                                <option value="">Select a name…</option>
+                                @foreach (var user in users)
+                                {
+                                    <option value="@user.Name">@user.Name</option>
+                                }
+                                <option value="@NewUserOption">New name…</option>
+                            </select>
+                        </div>
+
+                        @if (isNewUser)
+                        {
+                            <div class="col-sm-6">
+                                <label class="form-label small mb-0" for="newName">First name</label>
+                                <input id="newName" class="form-control" @bind="newName"
+                                       @bind:event="oninput" placeholder="Type your first name…" />
+                            </div>
+                        }
+                    </div>
+
+                    <button class="btn btn-primary mt-3" disabled="@(!CanSignIn || isBusy)" @onclick="SignIn">
+                        @(isBusy ? "Signing in…" : "Let's drink")
+                    </button>
+                }
+            }
+
+            @if (errorMessage is not null)
+            {
+                <div class="alert alert-danger mt-3 mb-0">@errorMessage</div>
+            }
+        </div>
+    </div>
 </div>
 
 <!-- GIF 1: Martini Toast -->
@@ -70,3 +129,88 @@
     </div>
 
 </div>
+
+@code {
+    private const string NewUserOption = "__new__";
+
+    private List<AppUser> users = new();
+    private string selectedName = string.Empty;
+    private string newName = string.Empty;
+    private bool isNewUser;
+    private bool isReady;
+    private bool isBusy;
+    private string? errorMessage;
+
+    private bool CanSignIn =>
+        isNewUser ? !string.IsNullOrWhiteSpace(newName) : !string.IsNullOrWhiteSpace(selectedName);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // localStorage and the API are only available once the client is interactive.
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await Session.InitializeAsync();
+        await LoadUsersAsync();
+
+        isReady = true;
+        StateHasChanged();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        try
+        {
+            users = await Session.GetUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not load names: {ex.Message}";
+            users = new List<AppUser>();
+        }
+    }
+
+    private void OnNameSelected(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+
+        isNewUser = value == NewUserOption;
+        selectedName = isNewUser ? string.Empty : value;
+
+        if (!isNewUser)
+        {
+            newName = string.Empty;
+        }
+    }
+
+    private async Task SignIn()
+    {
+        errorMessage = null;
+        isBusy = true;
+
+        try
+        {
+            await Session.SignInAsync(isNewUser ? newName : selectedName);
+            await LoadUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not sign in: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task SignOut()
+    {
+        await Session.SignOutAsync();
+        selectedName = string.Empty;
+        newName = string.Empty;
+        isNewUser = false;
+        await LoadUsersAsync();
+    }
+}

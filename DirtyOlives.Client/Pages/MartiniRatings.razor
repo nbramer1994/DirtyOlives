@@ -4,20 +4,28 @@
 @using DirtyOlives.Client.Components
 @using DirtyOlives.Client.Services
 @inject RatingsStorageService Storage
+@inject UserSessionService Session
+@inject NavigationManager Navigation
 
 <PageTitle>Martini Ratings</PageTitle>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0">Dirty Martini Ratings</h1>
-    <button class="btn btn-primary" @onclick="OpenDialog">Add Rating</button>
+    <button class="btn btn-primary" disabled="@(!Session.IsSignedIn)" @onclick="OpenDialog">Add Rating</button>
 </div>
 
 <div class="user-bar mb-3">
-    <label class="form-label mb-0" for="userId">User Id</label>
-    <input id="userId" type="number" min="1" class="form-control user-id-input" value="@userId"
-           @onchange="OnUserIdChanged" />
-    <button class="btn btn-outline-secondary" @onclick="LoadRatings">Load Ratings</button>
-    <span class="text-muted small">Ratings are stored per user id.</span>
+    @if (Session.CurrentUser is { } currentUser)
+    {
+        <span>Rating as <strong>@currentUser.Name</strong></span>
+        <button class="btn btn-outline-secondary" @onclick="LoadRatings">Reload</button>
+        <a class="text-muted small" href="/">Switch user</a>
+    }
+    else
+    {
+        <span class="text-muted">Pick your name on the home page to see your ratings.</span>
+        <a class="btn btn-outline-secondary" href="/">Go to sign in</a>
+    }
 </div>
 
 @if (errorMessage is not null)
@@ -25,13 +33,17 @@
     <div class="alert alert-danger">@errorMessage</div>
 }
 
-@if (!isLoaded)
+@if (!Session.IsSignedIn)
+{
+    <p class="text-muted">No one is signed in yet.</p>
+}
+else if (!isLoaded)
 {
     <p><em>Loading your ratings…</em></p>
 }
 else if (Ratings.Count == 0)
 {
-    <p class="text-muted">No martinis rated yet for user @userId. Add your first one to get started.</p>
+    <p class="text-muted">No martinis rated yet for @Session.CurrentUser?.Name. Add your first one to get started.</p>
 }
 else
 {
@@ -243,22 +255,30 @@ else
     private MartiniRating NewRating = new();
     private bool IsDialogOpen;
     private bool isLoaded;
-    private int userId = MartiniRating.DefaultUserId;
     private string? errorMessage;
     private string selectedOliveType = string.Empty;
     private bool isOtherOliveType;
     private string selectedVodka = string.Empty;
     private bool isOtherVodka;
 
-    protected override Task OnInitializedAsync() => LoadRatings();
+    private int UserId => Session.CurrentUser?.Id ?? MartiniRating.DefaultUserId;
 
-    private async Task OnUserIdChanged(ChangeEventArgs args)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (int.TryParse(args.Value?.ToString(), out var parsed) && parsed > 0)
+        // The session lives in localStorage, which only exists once interactive.
+        if (!firstRender)
         {
-            userId = parsed;
+            return;
+        }
+
+        await Session.InitializeAsync();
+
+        if (Session.IsSignedIn)
+        {
             await LoadRatings();
         }
+
+        StateHasChanged();
     }
 
     private async Task LoadRatings()
@@ -268,7 +288,7 @@ else
 
         try
         {
-            Ratings = await Storage.LoadAsync(userId);
+            Ratings = await Storage.LoadAsync(UserId);
         }
         catch (Exception ex)
         {
@@ -283,7 +303,7 @@ else
 
     private void OpenDialog()
     {
-        NewRating = new MartiniRating { UserId = userId };
+        NewRating = new MartiniRating { UserId = UserId };
         SyncOliveTypeSelection(NewRating.OliveType);
         SyncVodkaSelection(NewRating.Vodka);
         IsDialogOpen = true;
@@ -370,7 +390,7 @@ else
     private async Task Save()
     {
         errorMessage = null;
-        NewRating.UserId = userId;
+        NewRating.UserId = UserId;
 
         try
         {

@@ -15,6 +15,8 @@ namespace DirtyOlives.Data
         {
             ArgumentNullException.ThrowIfNull(db);
 
+            EnsureUsersTable(db);
+
             var entity = db.Model.FindEntityType(typeof(MartiniRating));
             var table = entity?.GetTableName();
 
@@ -43,6 +45,26 @@ namespace DirtyOlives.Data
                 var columnType = property.GetColumnType() ?? "text";
                 db.Database.ExecuteSqlRaw($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {columnType} NULL");
             }
+        }
+
+        /// <summary>
+        /// EnsureCreated only builds the schema for a brand new database, so the Users
+        /// table has to be created explicitly on databases that already existed.
+        /// The Id is app-assigned, which keeps this SQL valid on SQLite and PostgreSQL alike.
+        /// </summary>
+        private static void EnsureUsersTable(MartiniDbContext db)
+        {
+            db.Database.ExecuteSqlRaw(
+                """
+                CREATE TABLE IF NOT EXISTS "Users" (
+                    "Id" integer NOT NULL,
+                    "Name" character varying(100) NOT NULL,
+                    CONSTRAINT "PK_Users" PRIMARY KEY ("Id")
+                )
+                """);
+
+            db.Database.ExecuteSqlRaw(
+                """CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_Name" ON "Users" ("Name")""");
         }
 
         private static HashSet<string> GetColumns(MartiniDbContext db, string table)

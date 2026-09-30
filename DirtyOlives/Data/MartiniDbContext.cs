@@ -11,8 +11,19 @@ namespace DirtyOlives.Data
 
         public DbSet<MartiniRating> Ratings => Set<MartiniRating>();
 
+        public DbSet<AppUser> Users => Set<AppUser>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            var user = modelBuilder.Entity<AppUser>();
+
+            user.ToTable("Users");
+            user.HasKey(u => u.Id);
+            // Ids are assigned by UserService so one CREATE TABLE works on both providers.
+            user.Property(u => u.Id).ValueGeneratedNever();
+            user.Property(u => u.Name).HasMaxLength(100).IsRequired();
+            user.HasIndex(u => u.Name).IsUnique();
+
             var rating = modelBuilder.Entity<MartiniRating>();
 
             rating.HasKey(r => r.Id);
