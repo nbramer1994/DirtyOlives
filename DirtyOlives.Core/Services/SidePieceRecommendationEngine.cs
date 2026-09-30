@@ -117,9 +117,25 @@ namespace DirtyOlives.Core.Services
 			options.AddRange(TierOptions(tier, strongest));
 
 			// Different rules can arrive at the same suggestion; keep the first.
-			return options
+			var distinct = options
 				.GroupBy(o => o.Name, StringComparer.OrdinalIgnoreCase)
-				.Select(g => g.First())
+				.Select(g => g.First());
+
+			// Several rules often fire within the same kind - four snacks, three
+			// glassware swaps - which reads as repetitive. Keep one per kind so the
+			// list is a set of genuinely different ideas. Seeded off the rating so a
+			// given martini always shows the same picks across re-renders.
+			var random = new Random(GetSeed(rating));
+
+			// GroupBy preserves first-seen key order, so the most specific kind stays
+			// at the head of the list and remains the headline suggestion.
+			return distinct
+				.GroupBy(o => o.Kind)
+				.Select(g =>
+				{
+					var candidates = g.ToList();
+					return candidates[random.Next(candidates.Count)];
+				})
 				.ToList();
 		}
 
@@ -131,58 +147,58 @@ namespace DirtyOlives.Core.Services
 			if (Contains(olive, "blue cheese"))
 			{
 				yield return new("A wedge salad with extra blue cheese crumbles",
-					"You are already committed to the funk, so lean all the way in.");
+					"You are already committed to the funk, so lean all the way in.", SidePieceKind.Snack);
 				yield return new("Buffalo wings, drums only",
-					"Blue cheese olives and buffalo sauce were made for each other.");
+					"Blue cheese olives and buffalo sauce were made for each other.", SidePieceKind.Snack);
 			}
 
 			if (Contains(olive, "jalape") || Contains(olive, "spicy"))
 			{
 				yield return new("Jalapeno poppers and a cold beer back",
-					"The heat in those olives deserves a partner and a fire extinguisher.");
+					"The heat in those olives deserves a partner and a fire extinguisher.", SidePieceKind.Drink);
 				yield return new("Elote or street corn",
-					"Spicy olives want something sweet and charred alongside.");
+					"Spicy olives want something sweet and charred alongside.", SidePieceKind.Snack);
 			}
 
 			if (Contains(olive, "garlic"))
 			{
 				yield return new("Garlic butter escargot or garlic bread",
-					"Garlic stuffed olives say you have already given up on the rest of your evening plans.");
+					"Garlic stuffed olives say you have already given up on the rest of your evening plans.", SidePieceKind.Snack);
 			}
 
 			if (Contains(olive, "castelvetrano"))
 			{
 				yield return new("A marcona almond and manchego plate",
-					"Buttery Castelvetranos belong on a proper Mediterranean board.");
+					"Buttery Castelvetranos belong on a proper Mediterranean board.", SidePieceKind.Snack);
 			}
 
 			if (Contains(olive, "cerignola") || Contains(olive, "gordal") || Contains(olive, "queen"))
 			{
 				yield return new("Prosciutto and melon",
-					"Big meaty olives pair with something salty and cured.");
+					"Big meaty olives pair with something salty and cured.", SidePieceKind.Snack);
 			}
 
 			if (Contains(olive, "manzanilla"))
 			{
 				yield return new("Patatas bravas with aioli",
-					"Spanish olives, Spanish snacks. Keep the theme going.");
+					"Spanish olives, Spanish snacks. Keep the theme going.", SidePieceKind.Snack);
 			}
 
 			if (rating.OliveCount >= 5)
 			{
 				yield return new("Nothing. You ordered a salad.",
-					$"{rating.OliveCount} olives is not a garnish, it is a course.");
+					$"{rating.OliveCount} olives is not a garnish, it is a course.", SidePieceKind.Quip);
 			}
 			else if (rating.OliveCount <= 1)
 			{
 				yield return new("An extra olive skewer",
-					"One lonely olive is a rounding error. Ask for three.");
+					"One lonely olive is a rounding error. Ask for three.", SidePieceKind.Garnish);
 			}
 
 			if (Contains(vodka, "titos"))
 			{
 				yield return new("Queso and chips",
-					"Tito's is from Texas, so eat accordingly.");
+					"Tito's is from Texas, so eat accordingly.", SidePieceKind.Snack);
 			}
 
 			if (Contains(vodka, "grey goose") || Contains(vodka, "belvedere") || Contains(vodka, "ketel"))
@@ -190,35 +206,35 @@ namespace DirtyOlives.Core.Services
 				if (tier >= SidePieceTier.Good)
 				{
 					yield return new("Oysters on the half shell",
-						$"A pour like that {vodka} deserves brine that did not come from a jar.");
+						$"A pour like that {vodka} deserves brine that did not come from a jar.", SidePieceKind.Snack);
 				}
 				else
 				{
 					yield return new("A word with the bartender",
-						$"{vodka} is good vodka. Something else went wrong here.");
+						$"{vodka} is good vodka. Something else went wrong here.", SidePieceKind.Service);
 				}
 			}
 
 			if (rating.GlassStyle == GlassStyle.Rocks)
 			{
 				yield return new("A properly chilled stem glass",
-					"A martini in a rocks glass is a cry for help.");
+					"A martini in a rocks glass is a cry for help.", SidePieceKind.Glassware);
 			}
 			else if (rating.GlassStyle == GlassStyle.Novelty)
 			{
 				yield return new("A photo for the group chat",
-					"Whatever this was served in, the story is worth more than the drink.");
+					"Whatever this was served in, the story is worth more than the drink.", SidePieceKind.Quip);
 			}
 			else if (rating.GlassStyle == GlassStyle.NickAndNora && rating.GlassRating >= 4)
 			{
 				yield return new("A second round in the same glassware",
-					"Nick and Nora glasses never miss. Stay the course.");
+					"Nick and Nora glasses never miss. Stay the course.", SidePieceKind.Glassware);
 			}
 
 			if (rating.HasIceCrispys && tier >= SidePieceTier.Good)
 			{
 				yield return new("Another one before the crispys melt",
-					"Ice crispys are a perishable good. Act fast.");
+					"Ice crispys are a perishable good. Act fast.", SidePieceKind.Drink);
 			}
 		}
 
@@ -234,36 +250,36 @@ namespace DirtyOlives.Core.Services
 			{
 				case OlivesCategory:
 					yield return new("Blue cheese stuffed olive skewer",
-						"The olives underdelivered, so bring your own backup.");
+						"The olives underdelivered, so bring your own backup.", SidePieceKind.Garnish);
 					yield return new("A side of olives you actually like",
-						"Whatever came in the glass was not pulling its weight.");
+						"Whatever came in the glass was not pulling its weight.", SidePieceKind.Garnish);
 					yield return new("A castelvetrano upgrade",
-						"Ask what else they have behind the bar. Anything beats a tired olive.");
+						"Ask what else they have behind the bar. Anything beats a tired olive.", SidePieceKind.Garnish);
 					break;
 
 				case MixtureCategory:
 					yield return new("Extra olive brine on the side",
-						"The mixture was not dirty enough to carry the drink.");
+						"The mixture was not dirty enough to carry the drink.", SidePieceKind.Garnish);
 					yield return new("A dirty martini, filthy this time",
-						"Say the word filthy out loud next time and watch what happens.");
+						"Say the word filthy out loud next time and watch what happens.", SidePieceKind.Drink);
 					yield return new("A shot of brine as a chaser",
-						"If they will not put it in the glass, drink it separately.");
+						"If they will not put it in the glass, drink it separately.", SidePieceKind.Garnish);
 					break;
 
 				case VodkaCategory:
 					yield return new("A top shelf vodka upgrade",
-						"The well pour dragged the whole glass down.");
+						"The well pour dragged the whole glass down.", SidePieceKind.Drink);
 					yield return new("A gin martini instead",
-						"If the vodka is this rough, at least gin brings something to the party.");
+						"If the vodka is this rough, at least gin brings something to the party.", SidePieceKind.Drink);
 					yield return new("A beer and a nap",
-						"That vodka is not getting better with the second round.");
+						"That vodka is not getting better with the second round.", SidePieceKind.Drink);
 					break;
 
 				case GlassCategory:
 					yield return new("A chilled coupe swap",
-						"The glassware was the weak link - ask for a proper chilled glass.");
+						"The glassware was the weak link - ask for a proper chilled glass.", SidePieceKind.Glassware);
 					yield return new("A glass straight out of the freezer",
-						"Room temperature stemware ruins a martini in about ninety seconds.");
+						"Room temperature stemware ruins a martini in about ninety seconds.", SidePieceKind.Glassware);
 					break;
 			}
 		}
@@ -274,57 +290,57 @@ namespace DirtyOlives.Core.Services
 			{
 				case SidePieceTier.Perfect:
 					yield return new("Another one of these",
-						"Near perfect pour - do not change a thing.");
+						"Near perfect pour - do not change a thing.", SidePieceKind.Drink);
 					yield return new("The bartender's name and a generous tip",
-						"This is a relationship worth maintaining.");
+						"This is a relationship worth maintaining.", SidePieceKind.Service);
 					yield return new("A standing reservation",
-						"You found it. Stop looking.");
+						"You found it. Stop looking.", SidePieceKind.Service);
 					yield return new("Caviar service, obviously",
-						"A ten olive martini has earned the good stuff.");
+						"A ten olive martini has earned the good stuff.", SidePieceKind.Snack);
 					break;
 
 				case SidePieceTier.Excellent:
 					yield return new("Oysters and a second round",
-						$"The {strongest.ToLowerInvariant()} carried this one. Ride the wave.");
+						$"The {strongest.ToLowerInvariant()} carried this one. Ride the wave.", SidePieceKind.Drink);
 					yield return new("A shrimp cocktail",
-						"Cold, snappy, and it will not get in the martini's way.");
+						"Cold, snappy, and it will not get in the martini's way.", SidePieceKind.Snack);
 					yield return new("Steak frites",
-						"A martini this good deserves an actual dinner around it.");
+						"A martini this good deserves an actual dinner around it.", SidePieceKind.Snack);
 					yield return new("A cheese board and no plans",
-						"Settle in, this bar knows what it is doing.");
+						"Settle in, this bar knows what it is doing.", SidePieceKind.Snack);
 					break;
 
 				case SidePieceTier.Good:
 					yield return new("Salted nuts and a water back",
-						"Everything was solid; just keep the palate honest.");
+						"Everything was solid; just keep the palate honest.", SidePieceKind.Snack);
 					yield return new("Truffle fries",
-						"Good not great - let the food do some of the heavy lifting.");
+						"Good not great - let the food do some of the heavy lifting.", SidePieceKind.Snack);
 					yield return new("Deviled eggs",
-						"Briny, salty, and forgiving of a merely decent martini.");
+						"Briny, salty, and forgiving of a merely decent martini.", SidePieceKind.Snack);
 					yield return new("A charcuterie plate",
-						"Salt will flatter this one into a better drink than it is.");
+						"Salt will flatter this one into a better drink than it is.", SidePieceKind.Snack);
 					break;
 
 				case SidePieceTier.Mediocre:
 					yield return new("Bar snacks and lowered expectations",
-						"This one is not the main event, so make the food the main event.");
+						"This one is not the main event, so make the food the main event.", SidePieceKind.Snack);
 					yield return new("A basket of fries",
-						"Salt and starch will paper over most of what went wrong.");
+						"Salt and starch will paper over most of what went wrong.", SidePieceKind.Snack);
 					yield return new("A glass of water, then reassess",
-						"Reset the palate before you commit to a second.");
+						"Reset the palate before you commit to a second.", SidePieceKind.Drink);
 					yield return new("Whatever the person next to you ordered",
-						"They clearly know something you do not.");
+						"They clearly know something you do not.", SidePieceKind.Quip);
 					break;
 
 				case SidePieceTier.Poor:
 					yield return new("A different bar",
-						"Cut your losses and walk somewhere with a cold shaker.");
+						"Cut your losses and walk somewhere with a cold shaker.", SidePieceKind.Service);
 					yield return new("A beer, honestly",
-						"Hard to ruin a beer. Same cannot be said here.");
+						"Hard to ruin a beer. Same cannot be said here.", SidePieceKind.Drink);
 					yield return new("The check",
-						"This martini has told you everything you need to know.");
+						"This martini has told you everything you need to know.", SidePieceKind.Service);
 					yield return new("A sincere apology from the kitchen",
-						"Somebody back there owes you something.");
+						"Somebody back there owes you something.", SidePieceKind.Quip);
 					break;
 			}
 		}
@@ -439,7 +455,32 @@ namespace DirtyOlives.Core.Services
 	}
 
 	/// <summary>A single suggestion with the reasoning behind it.</summary>
-	public record SidePieceOption(string Name, string Reason);
+	public record SidePieceOption(string Name, string Reason, SidePieceKind Kind);
+
+	/// <summary>
+	/// Broad category of a suggestion. Only one suggestion per kind is surfaced so
+	/// the list does not turn into four variations on "order a snack".
+	/// </summary>
+	public enum SidePieceKind
+	{
+		/// <summary>Something to eat.</summary>
+		Snack,
+
+		/// <summary>Another drink, or a different one.</summary>
+		Drink,
+
+		/// <summary>Olives, skewers, brine - anything in the glass.</summary>
+		Garnish,
+
+		/// <summary>The vessel itself.</summary>
+		Glassware,
+
+		/// <summary>Talk to someone, tip, leave, come back.</summary>
+		Service,
+
+		/// <summary>A joke rather than an actionable order.</summary>
+		Quip
+	}
 
 	public class SidePieceRecommendation
 	{
