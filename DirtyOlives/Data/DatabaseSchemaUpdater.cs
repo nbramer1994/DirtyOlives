@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace DirtyOlives.Data
 {
     /// <summary>
-    /// The database is created with EnsureCreated, which never updates an existing file.
-    /// This adds any optional columns that were introduced after the database was first created.
+    /// The database is created with EnsureCreated, which never updates an existing database.
+    /// This adds any optional columns that were introduced after it was first created.
+    /// Works against both SQLite and PostgreSQL.
     /// </summary>
-    public static class SqliteSchemaUpdater
+    public static class DatabaseSchemaUpdater
     {
         public static void EnsureOptionalColumns(MartiniDbContext db)
         {
@@ -39,7 +40,7 @@ namespace DirtyOlives.Data
                     continue;
                 }
 
-                var columnType = property.GetColumnType() ?? "TEXT";
+                var columnType = property.GetColumnType() ?? "text";
                 db.Database.ExecuteSqlRaw($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {columnType} NULL");
             }
         }
@@ -58,12 +59,31 @@ namespace DirtyOlives.Data
             try
             {
                 using var command = connection.CreateCommand();
-                command.CommandText = $"PRAGMA table_info(\"{table}\")";
+
+                if (db.Database.IsSqlite())
+                {
+                    command.CommandText = $"PRAGMA table_info(\"{table}\")";
+
+                    using var sqliteReader = command.ExecuteReader();
+                    while (sqliteReader.Read())
+                    {
+                        columns.Add(sqliteReader.GetString(1));
+                    }
+
+                    return columns;
+                }
+
+                command.CommandText = "SELECT column_name FROM information_schema.columns WHERE table_name = @table";
+
+                var parameter = command.CreateParameter();
+                parameter.ParameterName = "table";
+                parameter.Value = table;
+                command.Parameters.Add(parameter);
 
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    columns.Add(reader.GetString(1));
+                    columns.Add(reader.GetString(0));
                 }
             }
             finally

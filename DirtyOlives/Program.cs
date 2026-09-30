@@ -12,9 +12,22 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddControllers();
 
+// Postgres (Neon/Render) when a Postgres connection string is configured, otherwise a local SQLite file.
+var connectionString = builder.Configuration.GetConnectionString("MartiniDb")
+                       ?? "Data Source=martinis.db";
+
 builder.Services.AddDbContext<MartiniDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("MartiniDb")
-                      ?? "Data Source=martinis.db"));
+{
+    if (DatabaseConnection.IsPostgres(connectionString))
+    {
+        options.UseNpgsql(DatabaseConnection.Normalize(connectionString),
+            npgsql => npgsql.EnableRetryOnFailure());
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
 
 builder.Services.AddScoped<MartiniRatingService>();
 
@@ -26,7 +39,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 
     // EnsureCreated leaves existing databases untouched, so patch in newer optional columns.
-    SqliteSchemaUpdater.EnsureOptionalColumns(db);
+    DatabaseSchemaUpdater.EnsureOptionalColumns(db);
 }
 
 // Configure the HTTP request pipeline.
